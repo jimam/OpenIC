@@ -1,11 +1,18 @@
 from flask import Flask
-from flask import render_template
+from flask import Response
+import json
 
 app = Flask(__name__)
 
-@app.route('/test')
-def hello_world():
-	return 'Hello World!!!'
+@app.route("/")
+def testView():
+    ret = {"TEST":"Data"}
+
+    resp = Response(response=json.dumps(ret),
+                    status=200,
+                    mimetype="application/json")
+
+    return resp
 
 if __name__ == '__main__':
 	app.debug = True
