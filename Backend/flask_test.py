@@ -14,7 +14,7 @@ import hashlib
 import uuid
 
 DATABASE = 'openic.db' #Database name
-PERMISSION_NAMES = {"post":0, "delete_others":1, "create_user":2, "change_passwords":3, "set_perms":4} #Permission bits
+PERMISSION_NAMES = {"post":0, "delete_others":1, "add_user":2, "change_passwords":3, "set_perms":4} #Permission bits
 
 app = Flask(__name__) #Setup flask
 
@@ -46,7 +46,11 @@ def addcomment(): #Add a comment
 def adduser(): #Add a user
 	query = dict(zip(request.args.keys(), request.args.values())) #Create a dictionary of keys and values
 	cur = get_db().cursor()
-	if get_perms(query["username"], "add_user"): #If the user has add user permissions
+
+	if auth_user(query["auth_user"], query["auth_password"]): #Authorise the user
+		return returnJSON([query["auth_user"], "didn't type in their correct password"])
+
+	if get_perms(query["auth_user"], "add_user"): #If the user has add user permissions
 		salt = uuid.uuid4().hex #Create the salt
 		password = hashlib.sha512(query["password"] + salt).hexdigest() #Generate the hashed password
 		if len(list(cur.execute('SELECT * FROM Users WHERE username = ?', (query["username"],)))) == 0: #If we dont have any users with that username
@@ -56,7 +60,7 @@ def adduser(): #Add a user
 		get_db().commit()
 		return returnJSON(["Complete", salt]) #User might want their salt
 	else:
-		return returnJSON([query["auth_user"], "doesn't have permission to elevate other users permissions"])
+		return returnJSON([query["auth_user"], "doesn't have permission to create user accounts"])
 
 @app.route("/elevate_permissions")
 def elevate_permissions():
@@ -73,6 +77,7 @@ def elevate_permissions():
 
 def auth_user(username, password): #Authorises the user with a username and password
 	cur = get_db().cursor()
+	print list(cur.execute('SELECT * FROM Users WHERE username = ?', (username,)))
 	auth_password = hashlib.sha512(password + list(cur.execute('SELECT * FROM Users WHERE username = ?', (username,)))[0][4]).hexdigest() #Hashed password
 	return auth_password != list(cur.execute('SELECT * FROM Users WHERE username = ?', (username,)))[0][3] #Is it the same as the one we have stored?
 
