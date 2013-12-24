@@ -1,4 +1,4 @@
- #!/usr/bin/env python
+#!/usr/bin/env python
 
 #Flask imports
 from flask import Flask
@@ -42,6 +42,12 @@ def addcomment(): #Add a comment
 	else:
 		return returnJSON([query["auth_user"], "doesn't have permission to elevate other users permissions"])
 
+@app.route("/getcomments")
+def getcomments(): #Get all comments
+	cur = get_db().cursor()
+	comments = list(cur.execute("SELECT * FROM Comments")) #Add the comment
+	return returnJSON(comments)
+
 @app.route("/adduser")
 def adduser(): #Add a user
 	query = dict(zip(request.args.keys(), request.args.values())) #Create a dictionary of keys and values
@@ -59,6 +65,11 @@ def adduser(): #Add a user
 		return returnJSON(["Complete", salt]) #User might want their salt
 	else:
 		return returnJSON([query["auth_user"], "doesn't have permission to create user accounts"])
+
+# /\
+#(--)
+#[><]
+# /\
 
 @app.route("/elevate_permissions")
 def elevate_permissions():
