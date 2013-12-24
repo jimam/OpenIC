@@ -46,10 +46,8 @@ def addcomment(): #Add a comment
 def adduser(): #Add a user
 	query = dict(zip(request.args.keys(), request.args.values())) #Create a dictionary of keys and values
 	cur = get_db().cursor()
-
 	if auth_user(query["auth_user"], query["auth_password"]): #Authorise the user
 		return returnJSON([query["auth_user"], "didn't type in their correct password"])
-
 	if get_perms(query["auth_user"], "add_user"): #If the user has add user permissions
 		salt = uuid.uuid4().hex #Create the salt
 		password = hashlib.sha512(query["password"] + salt).hexdigest() #Generate the hashed password
@@ -77,13 +75,18 @@ def elevate_permissions():
 
 def auth_user(username, password): #Authorises the user with a username and password
 	cur = get_db().cursor()
-	print list(cur.execute('SELECT * FROM Users WHERE username = ?', (username,)))
-	auth_password = hashlib.sha512(password + list(cur.execute('SELECT * FROM Users WHERE username = ?', (username,)))[0][4]).hexdigest() #Hashed password
-	return auth_password != list(cur.execute('SELECT * FROM Users WHERE username = ?', (username,)))[0][3] #Is it the same as the one we have stored?
+	try:
+		auth_password = hashlib.sha512(password + list(cur.execute('SELECT * FROM Users WHERE username = ?', (username,)))[0][4]).hexdigest() #Hashed password
+		return auth_password != list(cur.execute('SELECT * FROM Users WHERE username = ?', (username,)))[0][3] #Is it the same as the one we have stored?
+	except IndexError:
+		raise AssertionError("User doesn't exist")
 
 def get_perms(username, perm):
 	cur = get_db().cursor()
-	return bool(list(cur.execute('SELECT * FROM Users WHERE username = ?', (username,)))[0][2] >> PERMISSION_NAMES[perm]) #Get permission int then bitwise the permission number
+	try:
+		return bool(list(cur.execute('SELECT * FROM Users WHERE username = ?', (username,)))[0][2] >> PERMISSION_NAMES[perm]) #Get permission int then bitwise the permission number
+	except IndexError:
+		raise AssertionError("User doesn't exist")
 
 def returnJSON(ret):
    	try:
