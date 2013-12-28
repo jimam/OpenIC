@@ -14,7 +14,13 @@ import hashlib
 import uuid
 
 DATABASE = 'openic.db' #Database name
-PERMISSION_NAMES = {"post":0, "delete_others":1, "add_user":2, "change_passwords":3, "set_perms":4} #Permission bits
+PERMISSION_NAMES = {"post_all":0, \
+                    "delete_others":1, \
+                    "add_user":2, \
+                    "change_passwords":3, \
+                    "set_perms":4, \
+                    "post_group":5, \
+                    "set_groups":6,} #Permission bits
 
 app = Flask(__name__) #Setup flask
 
@@ -30,25 +36,57 @@ def close_connection(exception): #Called at the end of each request
 	if db is not None:
 		db.close() #Close the database
 
-@app.route("/addcomment")
-def addcomment(): #Add a comment
+@app.route("/addcomment_all")
+def addcomment_all(): #Add a comment
 	query = dict(zip(request.args.keys(), request.args.values())) #Create a dictionary of keys and values
-	userID = query["userID"]
 	cur = get_db().cursor()
-	if auth_user(userID, query["password"]): #Authorise the user
-		return returnJSON([userID, "didn't type in their correct password"])
-	if get_perms(userID, "post"): #If the user has posting permissions...
-		cur.execute("INSERT INTO Comments VALUES(NULL, ?, ?, ?)", (userID, query["comment"], datetime.datetime.now())) #Add the comment
+	if auth_user(query["username"], query["password"]): #Authorise the user
+		return returnJSON([query["username"], "didn't type in their correct password"])
+	if get_perms(query["username"], "post_all"): #If the user has posting permissions...
+		cur.execute("INSERT INTO Comments VALUES(NULL, ?, ?, ?, 'all')", (query["username"], query["comment"], str(datetime.datetime.now()).split(".")[0])) #Add the comment
 		get_db().commit()
 		return returnJSON("Comment %s was posted to all users" %(query["comment"]))
 	else:
-		return returnJSON([query["auth_user"], "doesn't have permission to elevate other users permissions"])
+		return returnJSON([query["auth_user"], "doesn't have permission to post to everyone"])
 
-@app.route("/getcomments")
-def getcomments(): #Get all comments
+@app.route("/addcomment_group")
+def addcomment_group(): #Add a comment
+	query = dict(zip(request.args.keys(), request.args.values())) #Create a dictionary of keys and values
+	cur = get_db().cursor()
+	if auth_user(query["username"], query["password"]): #Authorise the user
+		return returnJSON([query["username"], "didn't type in their correct password"])
+	if (get_perms(query["username"], "post_all")) or \
+	   (get_perms(query["username"], "post_group") and cur.execute("SELECT Users.username,Groups.groupname FROM Users,Groups,Users_Groups WHERE Users_Groups.userID=Users.ID AND Users_Groups.groupID=Groups.ID AND Users.username=?", (query["username"],))): #If the user has posting permissions...
+		cur.execute("INSERT INTO Comments VALUES(NULL, ?, ?, ?, ?)", (query["username"], query["comment"], datetime.datetime.now(), query["group_name"])) #Add the comment
+		get_db().commit()
+		return returnJSON("Comment %s was posted to group %s" %(query["comment"], query["group_name"]))
+	else:
+		return returnJSON([query["username"], "isn't allowed to post comments"])
+		
+
+@app.route("/get_all_comments")
+def get_all_comments(): #Get all comments
 	cur = get_db().cursor()
 	comments = list(cur.execute("SELECT * FROM Comments")) #Add the comment
 	return returnJSON(comments)
+
+
+@app.route("/add_group")
+def add_group(): #Add a user to a group
+	query = dict(zip(request.args.keys(), request.args.values())) #Create a dictionary of keys and values
+	cur = get_db().cursor()
+	if auth_user(query["auth_user"], query["auth_password"]): #Authorise the user
+		return returnJSON([query["auth_user"], "didn't type in their correct password"])
+	if get_perms(query["auth_user"], "set_groups"): #If the user has add group permissions)
+		if len(list(cur.execute("SELECT * FROM Groups WHERE groupname = ?", (query["group"],)))) == 0:
+			cur.execute("INSERT INTO Groups VALUES(?, ?)", (len(list(cur.execute("SELECT * FROM Groups")))+1, query["group"]))
+		get_db().commit()
+		cur.execute("INSERT INTO Users_Groups VALUES(NULL,?,?);"(list(cur.execute("SELECT ID FROM Users WHERE username = ?", (query["username"],)))[0], list(cur.execute("SELECT ID FROM Groups WHERE groupname = ?", (query["group"],)))[0]))
+		get_db().commit()
+		return returnJSON("Complete")
+	else:
+		return returnJSON([query["auth_user"], "doesn't have permission to add users to groups"])
+
 
 @app.route("/adduser")
 def adduser(): #Add a user
@@ -60,18 +98,13 @@ def adduser(): #Add a user
 		salt = uuid.uuid4().hex #Create the salt
 		password = hashlib.sha512(query["password"] + salt).hexdigest() #Generate the hashed password
 		if len(list(cur.execute('SELECT * FROM Users WHERE username = ?', (query["username"],)))) == 0: #If we dont have any users with that username
-			cur.execute("INSERT INTO Users VALUES(NULL, ?, 16, ?, ?)", (query["username"], password, salt)) #Create user
+			cur.execute("INSERT INTO Users VALUES(NULL, ?, 16, ?, ?, ?, ?)", (query["username"], password, salt, None)) #Create user
 		else:
 			return returnJSON(["Fail", "User with that name already created"])
 		get_db().commit()
 		return returnJSON(["Complete", salt]) #User might want their salt
 	else:
 		return returnJSON([query["auth_user"], "doesn't have permission to create user accounts"])
-
-# /\
-#(--)
-#[><]
-# /\
 
 @app.route("/elevate_permissions")
 def elevate_permissions():
