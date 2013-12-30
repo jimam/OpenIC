@@ -20,7 +20,8 @@ PERMISSION_NAMES = {"post_all":0, \
                     "change_passwords":3, \
                     "set_perms":4, \
                     "post_group":5, \
-                    "set_groups":6,} #Permission bits
+                    "set_groups":6, \
+					"view_all": 7} #Permission bits
 
 app = Flask(__name__) #Setup flask
 
@@ -62,13 +63,32 @@ def addcomment_group(): #Add a comment
 		return returnJSON("Comment %s was posted to group %s" %(query["comment"], query["group_name"]))
 	else:
 		return returnJSON([query["username"], "isn't allowed to post comments"])
-		
 
 @app.route("/get_all_comments")
 def get_all_comments(): #Get all comments
+	query = dict(zip(request.args.keys(), request.args.values())) #Create a dictionary of keys and values
+	cur = get_db().cursor()
+	if auth_user(query["auth_user"], query["auth_password"]): #Authorise the user
+		return returnJSON([query["auth_user"], "didn't type in their correct password"])
+	if get_perms(query["auth_user"], "view_all"):
+		return returnJSON([query["auth_user"], "isn't allowed to view all the comments"])
 	cur = get_db().cursor()
 	comments = list(cur.execute("SELECT * FROM Comments")) #Add the comment
 	return returnJSON(comments)
+
+@app.route("/get_group_comments")
+def get_group_comments(): #Get all comments the user is allowed to see
+	query = dict(zip(request.args.keys(), request.args.values())) #Create a dictionary of keys and values
+	cur = get_db().cursor()
+	if auth_user(query["auth_user"], query["auth_password"]): #Authorise the user
+		return returnJSON([query["auth_user"], "didn't type in their correct password"])
+	cur = get_db().cursor()
+	user_groups = list(cur.execute("SELECT Groups.groupname FROM Users,Groups,Users_Groups WHERE Users_Groups.userID=Users.ID AND Users_Groups.groupID=Groups.ID AND Users.username=?", (query["auth_user"],)))
+	if ((query["group_name"],) in user_groups) or (("all",) in user_groups):
+		comments = list(cur.execute("SELECT * FROM Comments WHERE group_name = ?", (query["group_name"],)))
+		return returnJSON(comments)
+	else:
+		return returnJSON([query["auth_user"], "isn't in group", query["group_name"]])
 
 
 @app.route("/add_group")
