@@ -3,7 +3,6 @@ CREATE TABLE Users(
        username TEXT,
        permissions INTEGER,
        password TEXT,
-       salt TEXT,
        image BLOB       
 );
 
@@ -33,7 +32,7 @@ INSERT INTO "Groups" VALUES(1, "all");
 INSERT INTO "Groups" VALUES(2, "Banned");
 INSERT INTO "Groups" VALUES(3, "group1");
 
-INSERT INTO "Users" VALUES(1, 'openic_admin',127,'09ae76728d35d3f41de600a6df700c02c3f3ba65742c7ed0e667555e11e1aca3c994eeb2c1755ef8261c75ea8d942a68c643fefb99f5ae3dedc2145c80c74666','6831e5dfdf6a456683146334051b34dc',X'80025D2E');
+INSERT INTO "Users" VALUES(1, 'openic_admin',127,'688126b498e5dc07df6df18b1c786bbc',X'80025D2E');
 
 INSERT INTO Users_Groups VALUES(NULL,1,1);
 INSERT INTO Users_Groups VALUES(NULL,1,3);
