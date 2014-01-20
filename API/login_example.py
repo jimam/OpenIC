@@ -117,8 +117,8 @@ def signup_page():
 	uid = str(uuid4())
 	session['rid'] = uid
 	cur.execute('INSERT INTO "Registrants" VALUES(?, ?);', (uid, word))
-#	cap = captcha.captcha(word)
-	strhtml = str(html).replace("<p>%captcha%</p>", word) #cap
+	cap = captcha.captcha(word)
+	strhtml = str(html).replace("<p>%captcha%</p>", cap) #cap
 	db.commit()
 	db.close()
 	return strhtml
@@ -132,7 +132,7 @@ def index_page():
 #@login_required
 
 if __name__ == "__main__":
-	print hash_pass("OpenIC")
+	#print hash_pass("OpenIC")
 	app.config["REMEMBER_COOKIE_DURATION"] = timedelta(days=14)
 	login_manager.login_view = "/login/"
 	#Setup the login manager.
