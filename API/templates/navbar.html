@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}OpenIC{% endblock %}</title>
+
+    <link href="{{ url_for('static', filename='navbar_files/bootstrap.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='navbar_files/navbar.css') }}" rel="stylesheet">
+    {% block head %}
+    {% endblock %}
+  </head>
+  <body>
+    <div class="container">
+      <div class="navbar navbar-default" role="navigation">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="/">OpenIC</a>
+        </div>
+        <div class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li><a href="/login/">Login</a></li>
+            <li><a href="#">Settings</a></li>
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">Dropdown <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="#">Action</a></li>
+                <li class="divider"></li>
+                <li class="dropdown-header">Nav header</li>
+                <li><a href="#">Action</a></li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </div>    
+    {% block body %}
+    {% endblock %}
+    </div>
+    <script src="{{ url_for('static', filename='navbar_files/jquery-1.js') }}"></script>
+    <script src="{{ url_for('static', filename='navbar_files/bootstrap.js') }}"></script>
+  </body>
+</html>
