@@ -1,24 +1,21 @@
-<!DOCTYPE html>
-<html lang="en"><head>
-    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
-    <link href="{{ url_for('static', filename='login_files/bootstrap.css') }}" rel="stylesheet">
-    <link href="{{ url_for('static', filename='login_files/signin.css') }}" rel="stylesheet">
-  </head>
-  <body>
-    <div class="container">
-      <form class="form-signin" role="form" action="{{ url_for('login_page') }}" method=post>
-        <h2 class="form-signin-heading">Login</h2>
-        <input class="form-control" placeholder="Username"  type="text" name="username">
-        <input class="form-control" placeholder="Password" type="password" name=password>
-        <label class="checkbox">
-          <input type="checkbox" name="remember"> Remember me
-        </label>
-        <button class="btn btn-lg btn-primary btn-block" type="submit">Login</button>
-      </form>
-    </div>
-  </body>
-</html>
+{% extends "navbar.html" %}
+{% block title %}
+  Login
+{% endblock %}
+{% block head %}
+  <link href="{{ url_for('static', filename='login_files/signin.css') }}" rel="stylesheet">
+{% endblock %}
+{% block body %}
+  <div class="container">
+    <form class="form-signin" role="form" action="{{ url_for('login_page') }}" method=post>
+      <h2 class="form-signin-heading">OpenIC Login</h2>
+      <input class="form-control" placeholder="Username"  type="text" name="username">
+      <input class="form-control" placeholder="Password" type="password" name=password>
+      <label class="checkbox">
+        <input type="checkbox" name="remember"> Remember me
+      </label>
+      <button class="btn btn-lg btn-primary btn-block" type="submit">Login</button>
+      <a class="btn btn-lg btn-primary btn-block" href="/signup/" style="margin-top: 48px;">Create an account</a>
+    </form>
+  </div>
+{% endblock %}
