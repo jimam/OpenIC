@@ -107,7 +107,7 @@ def signup_page():
 			except KeyError:
 				word = None
 		captcha_right = word == request.form["captcha_input"].lower()
-		print captcha_right, word, request.form["captcha_input"]
+		#print captcha_right, word, request.form["captcha_input"]
 		passwords_identical = request.form['password_confirm'] == request.form['password']
 		password_not_empty = request.form['password'] != ""
 		if captcha_right and passwords_identical and password_not_empty:
@@ -136,7 +136,7 @@ def signup_page():
 				if not user_length: reason += "User length too small\n"
 			except UnboundLocalError:
 				pass
-			print reason
+#			print reason
 			return render_template("feedback.html", feedback = reason.split("\n"), back_location = "../signup/")
 	dictionary_f = open("/usr/share/dict/words")
 	dictionary = dictionary_f.read().split("\n")
@@ -155,6 +155,7 @@ def signup_page():
 @app.route("/")
 def index_page():
 	user_id = (current_user.get_id() or "")
+	print session
 	return render_template("index.html", user_id = user_id)
 
 #@app.route("/restricted/")
