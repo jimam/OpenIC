@@ -1,0 +1,35 @@
+{% extends "navbar.html" %}
+{% block body %}
+  {% if groups %}
+  <ul class="list-group">
+    {%- for group in groups -%} 
+      <li class="list-group-item">
+	<span class="badge">{{ group[2] }}</span>
+	<a href="?topic={{ group[0] }}">{{ group[1] }}</a>
+      </li>
+    {%- endfor -%}
+  </ul>
+  {% endif %}
+  {% if comments %}
+    <ul class="media-list">
+      {%- for comment in comments -%} 
+        <li class="media">
+	  <a class="pull-left" href="#">
+	    <img class="media-object" src="" alt="{{ comment[5] }}'s profile image">
+	  </a>
+	  <div class="media-body">
+	    <h3 class="media-heading">{{ comment[5] }}</h3>
+	    <p>
+              {%- for line in comment[2] -%}
+                {{ line }}
+                {%- if not loop.last -%}
+                  <br />
+                {%- endif -%}
+	      {%- endfor -%}
+	    </p>
+	  </div>
+	</li>
+      {%- endfor -%}
+    </ul>
+  {% endif %}
+{% endblock %}
