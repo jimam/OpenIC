@@ -1,20 +1,27 @@
 {% extends "navbar.html" %}
 {% block body %}
-  <div class="jumbotron">
-    <h3 class="media-heading">{{ comment[-1] }}</h3>
-    <p>
-      {%- for line in comment[2] -%}
-        {{ line }}
-        {%- if not loop.last -%}
-          <br />
-        {%- endif -%}
-      {%- endfor -%}
-    </p>
-  </div>
+  {% if comment %}
+    <div class="jumbotron">
+      <h3 class="media-heading">{{ comment[-1] }}</h3>
+      <p>
+	{%- for line in comment[2] -%}
+          {{ line }}
+          {%- if not loop.last -%}
+            <br />
+          {%- endif -%}
+	{%- endfor -%}
+      </p>
+    </div>
   <form role="form" action="{{ url_for('post_comment') }}" method=post>
     <div class="input-group">
       <input type="hidden" name="group" value="{{ comment[4] }}">
       <input type="hidden" name="replyid" value="{{ comment[0] }}">
+  {% else %}
+  <form role="form" action="{{ url_for('post_comment') }}" method=post>
+    <div class="input-group">
+      <input type="hidden" name="group" value="{{ group }}">
+      <input type="hidden" name="replyid" value="-1">
+  {% endif %}
       <span class="input-group-btn">
 	<button class="btn btn-primary btn-md" type="submit">Post</button>
       </span>

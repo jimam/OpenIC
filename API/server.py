@@ -1,12 +1,13 @@
 from datetime import timedelta
 import md5
 import random
+import time
 from uuid import uuid4
 from flask import Flask, request, redirect, render_template, session
 from flask.ext.login import LoginManager, login_required, login_user, current_user, logout_user, UserMixin
 from itsdangerous import URLSafeTimedSerializer
 import sqlite3 as sql
-
+import StringIO
 import captcha
 
 DATABASE = 'openic.db' #Database name
@@ -17,19 +18,6 @@ app.secret_key = "OpenIC_H|>;@\%x0PG'rvse>BHJuvxDXV[XciN(YC97-*Cdd[j~b/E!HKXu.i8
 login_serializer = URLSafeTimedSerializer(app.secret_key)
 login_manager = LoginManager()
 
-def get_db():
-	db = getattr(g, '_database', None) #Is the database already existing
-	if db is None: #If it doesn't exist create it
-		db = g._database = sql.connect(DATABASE)
-	return db #return the database
-@app.teardown_appcontext
-def close_connection(exception): #Called at the end of each request
-	try:
-		db = getattr(g, '_database', None)
-		if db is not None:
-			db.close() #Close the database
-	except NameError:
-		pass
 class User(UserMixin):
 	def __init__(self, userid, password):
 		self.id = userid
@@ -94,7 +82,6 @@ def signup_page():
 	db = sql.connect("registrants.db")
 	cur = db.cursor()
 	if request.method == "POST":
-		print "POST"
 		word = ""
 		for registrant in list(cur.execute("SELECT ID, CAPTCHA FROM Registrants")):
 #			print session['rid'], registrant
@@ -147,15 +134,106 @@ def signup_page():
 	cur.execute('INSERT INTO "Registrants" VALUES(?, ?);', (uid, word))
 	cap = captcha.captcha(word)
 	html = render_template("signup.html")
-	strhtml = str(html).replace("<p>%captcha%</p>", word) #cap
+	strhtml = str(html).replace("<p>%captcha%</p>", cap) #cap
 	db.commit()
 	db.close()
 	return strhtml
 
+
+@app.route("/post/", methods=["GET", "POST"])
+def post_comment():
+	db = sql.connect(DATABASE)
+	cur = db.cursor()
+	if request.method == "POST":
+		group = request.form['group']
+		replyid = request.form['replyid']
+		comment = request.form['comment']
+		userid =  list(cur.execute("SELECT ID FROM Users where username = ?", (current_user.get_id(), )))[0][0]
+		cur.execute("INSERT INTO Comments Values(NULL, ?, ?, ?, ?, ?)", (userid, comment, time.time(), group, replyid))
+		cur.execute("UPDATE Groups SET lastposted = ? WHERE groupname = ?", (time.time(), group))
+		db.commit()
+		db.close()
+		return redirect("/view/")
+	if "comment" in request.args.keys():
+		group_id = request.args["comment"]
+		group_comments = list(list(cur.execute("SELECT * FROM Comments where ID = ?", (group_id,)))[0])
+		group_comments[2] = group_comments[2].split("\n")
+		group_comments.extend(list(cur.execute("SELECT username FROM Users where ID = ?", (int(group_comments[1]), )))[0])
+		db.close()
+		return render_template("post.html", comment=group_comments)
+	elif "topic" in request.args.keys():
+		db.close()
+		return render_template("post.html", group = request.args["topic"])
+
+def commenttree(groupid):
+	db = sql.connect(DATABASE)
+	cur = db.cursor()
+	group_name = list(cur.execute("SELECT groupname FROM Groups where ID = ?", (groupid[0]-1,)))[0][0]
+	group_comments = [list(i) for i in list(cur.execute("SELECT * FROM Comments where group_name = ?", (group_name,)))]
+	mv = []
+	for group_comment in range(len(group_comments)):
+		group_comments[group_comment][2] = group_comments[group_comment][2].split("\n")
+		group_comments[group_comment].extend(list(cur.execute("SELECT username FROM Users where ID = ?", (int(group_comments[group_comment][1]), )))[0])
+
+		if  group_comments[group_comment][5] != -1:
+			for commentidsearch in range(len(group_comments)):
+				if group_comments[commentidsearch][0] == group_comments[group_comment][5]:
+					mv.append((group_comment, commentidsearch))
+		group_comments[group_comment][5] = []
+	for i in reversed(mv):
+		group_comments[i[1]][5].append(group_comments[i[0]])
+	for i in range(len(mv)):
+		del group_comments[mv[i][0]-i]
+	db.close()
+	return group_comments
+
+@app.route("/view/")
+def view_page():
+	db = sql.connect(DATABASE)
+	cur = db.cursor()
+	try:
+		userid = list(cur.execute("SELECT ID FROM Users WHERE username = ?", (current_user.get_id(),)))[0][0]
+		groupids = list(cur.execute("SELECT groupID FROM Users_Groups WHERE userID = ?", (userid,)))
+		if "topic" in request.args.keys():
+			if request.args["topic"] in [str(groupid[0]) for groupid in groupids]:
+				group_name = list(cur.execute("SELECT groupname FROM Groups where ID = 1"))[0][0]
+				group_comments = commenttree(groupid)
+				db.close()
+				return render_template("view.html", comments = group_comments,  group=group_name)
+
+		groups = []
+		for groupid in groupids:
+			groups.append(list(list(cur.execute("SELECT * FROM Groups where ID = ?", (groupid[0],)))[0]))
+			#print groups
+			groups[-1][1] = groups[-1][1].title()
+			groups[-1][2] = time.strftime("%d/%m/%Y", time.localtime(groups[-1][2]))
+	except IndexError:
+		groups = []
+		if "topic" in request.args.keys():
+			if request.args["topic"] == "1":
+				comments = []
+				group_name = list(cur.execute("SELECT groupname FROM Groups where ID = 1"))[0][0]
+				group_comments = [list(i) for i in list(cur.execute("SELECT * FROM Comments where group_name = ?", (group_name,)))]
+				for group_comment in range(len(group_comments)):
+					group_comments[group_comment][2] = group_comments[group_comment][2].split("\n")
+					group_comments[group_comment].extend(list(cur.execute("SELECT username FROM Users where ID = ?", (int(group_comments[group_comment][1]), )))[0])
+				#print group_comments
+				db.close()
+				return render_template("view.html", comments = group_comments) 	
+	if groups == []:
+		groups.append(list(list(cur.execute("SELECT * FROM Groups where ID = ?", (1,)))[0]))
+		#print groups
+		groups[-1][1] = groups[-1][1].title()
+		groups[-1][2] = time.strftime("%d/%m/%Y", time.localtime(groups[-1][2]))
+		
+	db.close()
+	return render_template("view.html", groups = groups)
+
+
+
 @app.route("/")
 def index_page():
 	user_id = (current_user.get_id() or "")
-	print session
 	return render_template("index.html", user_id = user_id)
 
 #@app.route("/restricted/")
@@ -163,7 +241,7 @@ def index_page():
 
 if __name__ == "__main__":
 	#print hash_pass("OpenIC")
-	app.config["REMEMBER_COOKIE_DURATION"] = timedelta(days=14)
+	app.config["REMEMBER_COOKIE_DURATION"] = timedelta(days=1)
 	login_manager.login_view = "/login/"
 	#Setup the login manager.
 	login_manager.setup_app(app)	

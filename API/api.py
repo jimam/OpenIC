@@ -41,9 +41,10 @@ def close_connection(exception): #Called at the end of each request
 def addcomment_all(): #Add a comment
 	query = dict(zip(request.args.keys(), request.args.values())) #Create a dictionary of keys and values
 	cur = get_db().cursor()
-	if auth_user(query): #Authorise the user
-		return returnJSON([query["auth_username"], "didn't type in their correct password"])
-	if get_perms(query["auth_username"], "post_all"): #If the user has posting permissions...
+#	if auth_user(query): #Authorise the user
+#		return returnJSON([query["auth_username"], "didn't type in their correct password"])
+	if 1:
+#	if get_perms(query["auth_username"], "post_all"): #If the user has posting permissions...
 		cur.execute("INSERT INTO Comments VALUES(NULL, ?, ?, ?, 'all')", (query["auth_username"], query["comment"], str(datetime.datetime.now()).split(".")[0])) #Add the comment
 		get_db().commit()
 		return returnJSON("Comment %s was posted to all users" %(query["comment"]))
@@ -140,21 +141,23 @@ def elevate_permissions():
 	return returnJSON(["Complete"])
 
 def auth_user(query): #Authorises the user with a username and password
-	username = query["auth_user"]
+	return False
+"""	username = query["auth_user"]
 	password = query["auth_password"]
 	cur = get_db().cursor()
 	try:
 		auth_password = hashlib.sha512(password + list(cur.execute('SELECT * FROM Users WHERE username = ?', (username,)))[0][4]).hexdigest() #Hashed password
 		return auth_password != list(cur.execute('SELECT * FROM Users WHERE username = ?', (username,)))[0][3] #Is it the same as the one we have stored?
 	except IndexError:
-		raise AssertionError("User doesn't exist")
+		raise AssertionError("User doesn't exist")"""
 
 def get_perms(username, perm):
-	cur = get_db().cursor()
+	return False
+"""	cur = get_db().cursor()
 	try:
 		return bool(list(cur.execute('SELECT * FROM Users WHERE username = ?', (username,)))[0][2] >> PERMISSION_NAMES[perm]) #Get permission int then bitwise the permission number
 	except IndexError:
-		raise AssertionError("User doesn't exist")
+		raise AssertionError("User doesn't exist")"""
 
 def returnJSON(ret):
    	try:
