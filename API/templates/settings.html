@@ -1,0 +1,27 @@
+{% extends "navbar.html" %}
+{% block title %}
+  Account settings
+{% endblock %}
+{% block body %}
+  <div class="container">
+    <form enctype=multipart/form-data role="form" action="{{ url_for('settings_page') }}" method=post style="width:300px">
+      <h2 class="form-signin-heading">Account Settings</h2>
+      <input class="form-control" placeholder="New password"  type="password" name="password">
+      <input class="form-control" placeholder="Confirm password"  type="password" name="password">
+
+      <div class="fileinput fileinput-new" data-provides="fileinput">
+	<div class="fileinput-new thumbnail" style="width: 200px; height: 200px;">
+	  <img data-src="holder.js/100%x100%" alt="...">
+	</div>
+	<div class="fileinput-preview fileinput-exists thumbnail" style="max-width: 200px; max-height: 200px;"></div>
+	<div>
+	  <span class="btn btn-default btn-file"><span class="fileinput-new">Select image</span><span class="fileinput-exists">Change</span><input type="file" name="..." value = "file"></span>
+	  <a href="#" class="btn btn-default fileinput-exists" data-dismiss="fileinput">Remove</a>
+	</div>
+      </div>
+
+
+      <button class="btn btn-lg btn-primary btn-block" type="submit">Update</button>
+    </form>
+  </div>
+{% endblock %}
