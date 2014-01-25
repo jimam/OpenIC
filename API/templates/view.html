@@ -1,15 +1,13 @@
 {% extends "navbar.html" %}
 
-
 {% macro commenttree(comments) -%}
   {%- for comment in comments -%}
-
     <div class="media">
       <a class="pull-left" href="#">
-	<img class="media-object" src="" alt="{{ comment[-1] }}">
+	<img class="media-object" src="/Profile_IM/{{ comment[1] }}.png" alt="{{ comment[-1] }}">
       </a>
       <div class="media-body">
-	<div class="jumbotron">
+	<div class="jumbotron" style="padding: 12px 15px;">
 	  <h3 class="media-heading">{{ comment[-1] }}</h3>
 	  <p>
 	    {%- for line in comment[2] -%}
@@ -23,7 +21,6 @@
             <p><a class="btn btn-primary btn-md" role="button" href="/post?comment={{ comment[0] }}">Post Reply</a></p>
 	  {% endif %}
 	</div>
-
 	{%- if comment[5] != [] -%}
           {{ commenttree(comment[5]) }} 
 	{% endif %}
@@ -32,7 +29,14 @@
   {%- endfor -%}
 {%- endmacro %}
   
+{% if comments %}
+  {% block title %}{{comments}}{% endblock %}
+{% endif %}
+
 {% block body %}
+  {% if comments %}
+    {{ commenttree(comments) }}
+  {% endif %}
   {% if groups %}
   <ul class="list-group">
     {%- for group in groups -%} 
@@ -42,9 +46,7 @@
       </li>
     {%- endfor -%}
   </ul>
-  {% endif %}
-  {% if comments %}
-    {{ commenttree(comments) }}
+  {% else %}
     <p><a class="btn btn-primary btn-md" role="button" href="/post?topic={{group}}">New Post</a></p>
   {% endif %}
 {% endblock %}

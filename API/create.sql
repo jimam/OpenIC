@@ -3,8 +3,7 @@ CREATE TABLE Users(
        username TEXT,
        real_name TEXT, 
        permissions INTEGER,
-       password TEXT,
-       image BLOB       
+       password TEXT 
 );
 
 CREATE TABLE Groups(
@@ -32,12 +31,9 @@ CREATE TABLE Users_Groups(
 );
 
 INSERT INTO 'Groups' VALUES(1, 'all', 0);
-INSERT INTO 'Groups' VALUES(2, 'admins', 1000000000);
+INSERT INTO 'Groups' VALUES(2, 'admins', 0);
 
-INSERT INTO 'Users' VALUES(1, 'openic_admin','I.C Open',127,'4cb976dff63ff05a0ec4b86b7a4b31b0',X'80025D2E');
+INSERT INTO 'Users' VALUES(1, 'openic_admin','I.C Open',127,'4cb976dff63ff05a0ec4b86b7a4b31b0');
 
 INSERT INTO Users_Groups VALUES(NULL,1,1);
 INSERT INTO Users_Groups VALUES(NULL,1,2);
-
-
-INSERT INTO 'Comments' VALUES(1, 1,'Comment',127000,'all', -1);
