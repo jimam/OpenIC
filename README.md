@@ -8,7 +8,7 @@ OpenIC gives you a way to share infomation between groups of people. Ask questio
 This project includes a webserver using flask for viewing and downloading information.
 It works best when set up in a reverse proxy with something like nginx.
 
-It comes with a web interface using a modified Bootstrap for adding infomation, viewing information and managing how and where the infomation is sent to.
+It comes with a web interface using a modified version of Bootstrap 3.0 for adding infomation, viewing information and managing how and where the infomation is sent to.
 OpenIC also comes with an API so that you could write a mobile app to communicate with it.
 
 Groups
@@ -36,6 +36,9 @@ The API is currently not working properly, but it will return JSON data from a c
 Please Note
 ===========
 
-The mobile device applications haven't been written yet, although the API exists for you to use yourself.
-The OpenIC will only currently run under Linux, as it relies on a few Linux specific things.
-OpenIC Server will require an internet connection if you want to add users. Otherwise it can be run over a local network, although we don't reccomend this.
+The mobile device applications haven't been written yet, although an API exists for you to use yourself.
+The OpenIC Server will currently only run under Linux, as it relies on a few Linux specific things.
+  A dictionary (/usr/share/dict/words)
+  General path names
+The OpenIC Server will require an internet connection if you want to add users.
+Otherwise it can be run over a local network, although we don't reccomend this.
