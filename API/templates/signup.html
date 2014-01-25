@@ -3,15 +3,15 @@
   Sign Up
 {% endblock %}
 {% block body %}
-  <div class="container">
+  <div class="container" style="height: 100%; width: 40%;">
     <form class="form-signin" role="form" action="{{ url_for('signup_page') }}" method=post>
       <h2 class="form-signin-heading">Sign Up for OpenIC</h2>
-      <input class="form-control" placeholder="Desired Username"  type="text" name="username">
-      <input class="form-control" placeholder="Full Name"  type="text" name="name">
-      <input class="form-control" placeholder="Password" type="password" name=password>
-      <input class="form-control" placeholder="Confirm Password" type="password" name=password_confirm>
+      <input class="form-control" placeholder="Desired Username"  type="text" name="username" style="margin-bottom: 16px;">
+      <input class="form-control" placeholder="Full Name"  type="text" name="name" style="margin-bottom: 16px;">
+      <input class="form-control" placeholder="Password" type="password" name=password style="margin-bottom: 16px;">
+      <input class="form-control" placeholder="Confirm Password" type="password" name=password_confirm style="margin-bottom: 16px;">
       <p>%captcha%</p>
-      <input class="form-control" placeholder="Captcha"  type="text" name="captcha_input">
+      <input class="form-control" placeholder="Captcha"  type="text" name="captcha_input" style="margin-bottom: 16px; margin-top: 16px;">
       <button class="btn btn-lg btn-primary btn-block" type="submit">Sign Up</button>
     </form>
   </div>

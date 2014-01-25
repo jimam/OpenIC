@@ -104,7 +104,7 @@ def settings_page():
 			x.write(sync_file.getvalue())
 			x.close()
 			im = Image.open("static/Profile_IM/"+filename+".png")
-			im = im.resize((148,148))
+			im = im.resize((127,127))
 			im.save("static/Profile_IM/"+filename+".png")
 			#print sync_file.getvalue()
 
