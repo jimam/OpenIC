@@ -238,7 +238,7 @@ def view_page():
 				group_name = list(cur.execute("SELECT groupname FROM Groups where ID = ?", (request.args["topic"])))[0][0]
 				group_comments = commenttree(int(request.args["topic"]))
 				db.close()
-				return render_template("view.html", comments = group_comments,  group=group_name)
+				return render_template("view.html", comments = group_comments,  group=group_name, title="Topic: "+group_name.title())
 
 		groups = []
 		for groupid in groupids:
@@ -255,7 +255,7 @@ def view_page():
 				group_comments = commenttree("1")
 					
 				db.close()
-				return render_template("view.html", comments = group_comments) 	
+				return render_template("view.html", comments = group_comments, title="Topic: "+group_name.title()) 	
 	if groups == []:
 		groups.append(list(list(cur.execute("SELECT * FROM Groups where ID = ?", (1,)))[0]))
 		#print groups

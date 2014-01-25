@@ -2,14 +2,14 @@
 
 {% macro commenttree(comments) -%}
   {%- for comment in comments -%}
-    <div class="media">
+    <div class="media" style="margin-top: 0px;">
       <a class="pull-left" href="#">
 	<img class="media-object" src="/Profile_IM/{{ comment[1] }}.png" alt="{{ comment[-1] }}">
       </a>
       <div class="media-body">
-	<div class="jumbotron" style="padding: 12px 15px;">
-	  <h3 class="media-heading">{{ comment[-1] }}</h3>
-	  <p>
+	<div class="jumbotron" style="padding: 12px 15px; margin-bottom: 10px; margin-left: 0px;">
+	  <h3 class="media-heading" style="margin-bottom: 0px;">{{ comment[-1] }}</h3>
+	  <p style="margin-top: 0px; margin-bottom: 0px;">
 	    {%- for line in comment[2] -%}
               {{ line }}
               {%- if not loop.last -%}
@@ -18,7 +18,7 @@
 	    {%- endfor -%}
 	  <p/>
 	  {% if current_user.is_authenticated() %}
-            <p><a class="btn btn-primary btn-md" role="button" href="/post?comment={{ comment[0] }}">Post Reply</a></p>
+            <p style="margin-top: 32px; margin-bottom: 0px;"><a class="btn btn-primary btn-md" role="button" href="/post?comment={{ comment[0] }}">Post Reply</a></p>
 	  {% endif %}
 	</div>
 	{%- if comment[5] != [] -%}
@@ -29,8 +29,8 @@
   {%- endfor -%}
 {%- endmacro %}
   
-{% if comments %}
-  {% block title %}{{comments}}{% endblock %}
+{% if title %}
+  {% block title %}{{title}}{% endblock %}
 {% endif %}
 
 {% block body %}
