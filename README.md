@@ -37,3 +37,5 @@ Please Note
 ===========
 
 The mobile device applications haven't been written yet, although the API exists for you to use yourself.
+The OpenIC will only currently run under Linux, as it relies on a few Linux specific things.
+OpenIC Server will require an internet connection if you want to add users. Otherwise it can be run over a local network, although we don't reccomend this.
