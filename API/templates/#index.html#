@@ -1,6 +1,0 @@
-{% extends "navbar.html" %}
-{% block body %}
-  <div class="jumbotron">
-    <p>You are logged in as: {{ user_id}}</p>
-  </div>
-{% endblock %}
