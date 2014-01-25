@@ -37,6 +37,6 @@ Please Note
 ===========
 
 The mobile device applications haven't been written yet, although an API exists for you to use yourself.
-The OpenIC Server will currently only run under Linux and MacOSX, as it relies on a few Linux specific things such as the dictionary (/usr/share/dict/words) and general path names.
+The OpenIC Server will currently only run under Linux and MacOSX, as it relies on a few Unix specific things such as the dictionary (/usr/share/dict/words) and general path names.
 The OpenIC Server will require an internet connection if you want to add users.
 Otherwise it can be run over a local network, although we don't reccomend this.
