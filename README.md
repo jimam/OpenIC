@@ -26,6 +26,8 @@ Say I'm on my way home. I can send a question out to a "Family" group (via the A
 Infomation
 ==========
 
+Infomation/threads/posts are posted with the web app, API, or a future mobile app. 
+
 API
 ===
 
