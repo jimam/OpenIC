@@ -47,6 +47,8 @@
     {%- endfor -%}
   </ul>
   {% else %}
-    <p><a class="btn btn-primary btn-md" role="button" href="/post?topic={{group}}">New Post</a></p>
+    {% if current_user.is_authenticated() and not is_question %}
+      <p><a class="btn btn-primary btn-md" role="button" href="/post?topic={{group}}">New Post</a></p>
+    {% endif %}
   {% endif %}
 {% endblock %}

@@ -20,7 +20,7 @@ DATABASE = 'openic.db' #Database name
 
 UPLOAD_FOLDER = 'Profile_IM'
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif', 'tiff', 'bmp'])
- 
+
 app = Flask(__name__)
 app.debug = True
 app.secret_key = "OpenIC_H|>;@\%x0PG'rvse>BHJuvxDXV[XciN(YC97-*Cdd[j~b/E!HKXu.i8k+YmcuygHKOxS6)bcno<<sm`ITZu%^xR;QXX9/{R#V^n^.{;'C$<[S=wGDf1]q?m50jRk!."
@@ -86,6 +86,27 @@ def login_page():
 			return redirect(request.args.get("next") or "/")
 	return render_template("login.html")
 
+@app.route("/add_topic/", methods=["GET", "POST"])
+@login_required
+def add_topic():
+	if request.method == "POST":
+		db = sql.connect("openic.db")
+		cur = db.cursor()
+		cur.execute("INSERT INTO Groups Values(NULL, ?, ?, ?)", (request.form["name"],time.time(), request.form["type"]*1))
+		db.commit()
+		userid = list(cur.execute("SELECT ID FROM Users where username = ?", (current_user.get_id(), )))[0][0]
+		groupid = list(cur.execute("SELECT ID FROM Groups where groupname = ?", (request.form["name"],)))[0][0]
+		cur.execute("INSERT INTO Users_Groups VALUES(NULL,?,?);", (userid,groupid))
+		cur.execute("INSERT INTO Comments Values(NULL, ?, ?, ?, ?, -1)", (userid, request.form["question"], time.time(), request.form["name"]))
+		db.commit()
+		db.close()
+		return redirect("/view/")
+			
+	option = False
+	if "type" in request.args.keys():
+		option = request.args["type"] == "question"
+	return render_template("add_topic.html", option = option)
+
 @app.route("/settings/", methods=["GET", "POST"])
 @login_required
 def settings_page():
@@ -120,7 +141,6 @@ def signup_page():
 	if request.method == "POST":
 		word = ""
 		for registrant in list(cur.execute("SELECT ID, CAPTCHA FROM Registrants")):
-#			print session['rid'], registrant
 			try:
 				if session['rid'] == registrant[0]:
 					word = registrant[1].lower()
@@ -130,7 +150,6 @@ def signup_page():
 			except KeyError:
 				word = None
 	 	captcha_right = word == request.form["captcha_input"].lower()
-		#print captcha_right, word, request.form["captcha_input"]
 		passwords_identical = request.form['password_confirm'] == request.form['password']
 		password_not_empty = request.form['password'] != ""
 		if captcha_right and passwords_identical and password_not_empty:
@@ -144,7 +163,7 @@ def signup_page():
 				user_added = True
 				usercur.execute("INSERT INTO Users VALUES(NULL, ?, ?, 0, ?)", (request.form["username"], request.form["name"], hash_pass(request.form['password']))) #Create user
 				userdb.commit()
-				userid = list(cur.execute("SELECT ID FROM Users where username = ?", (request.form["username"], )))[0][0]
+				userid = list(usercur.execute("SELECT ID FROM Users WHERE username = ?", (request.form["username"], )))[0][0]
 			userdb.close()
 			if user_added:
 				os.system("cp static/Profile_IM/new_user_im.png static/Profile_IM/%s.png"%(userid))
@@ -170,7 +189,7 @@ def signup_page():
 	uid = str(uuid4())
 	session['rid'] = uid
 	cur.execute('INSERT INTO "Registrants" VALUES(?, ?);', (uid, word))
-	cap = captcha.captcha(word)
+#	cap = captcha.captcha(word)
 	html = render_template("signup.html")
 	strhtml = str(html).replace("<p>%captcha%</p>", word) #cap
 	db.commit()
@@ -230,15 +249,16 @@ def commenttree(groupid):
 def view_page():
 	db = sql.connect(DATABASE)
 	cur = db.cursor()
-	try:
+	if current_user.get_id():
 		userid = list(cur.execute("SELECT ID FROM Users WHERE username = ?", (current_user.get_id(),)))[0][0]
 		groupids = list(cur.execute("SELECT groupID FROM Users_Groups WHERE userID = ?", (userid,)))
 		if "topic" in request.args.keys():
 			if request.args["topic"] in [str(groupid[0]) for groupid in groupids] or request.args["topic"] == "1":
-				group_name = list(cur.execute("SELECT groupname FROM Groups where ID = ?", (request.args["topic"])))[0][0]
+				group_info = list(cur.execute("SELECT groupname, group_type FROM Groups where ID = ?", (request.args["topic"])))[0]
 				group_comments = commenttree(int(request.args["topic"]))
 				db.close()
-				return render_template("view.html", comments = group_comments,  group=group_name, title="Topic: "+group_name.title())
+				print group_info
+				return render_template("view.html", comments = group_comments,  group=group_info[0], title="Topic: "+group_info[0].title(), is_question = group_info[1])
 
 		groups = []
 		for groupid in groupids:
@@ -246,7 +266,7 @@ def view_page():
 			#print groups
 			groups[-1][1] = groups[-1][1].title()
 			groups[-1][2] = time.strftime("%H:%M  %d/%m/%Y", time.localtime(groups[-1][2]))
-	except IndexError:
+	else:
 		groups = []
 		if "topic" in request.args.keys():
 			if request.args["topic"] == "1":
